@@ -20,11 +20,15 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
 
       - name: 🔍 Tap current repo
-        run: brew tap --force-auto-update ./.
+        run: brew tap kareandersen/homebrew-toslibc
 
       - name: 🔨 Install toslibc from source
-        run: brew install --build-from-source toslibc
+        run: brew install --HEAD toslibc
 
       - name: ✅ Run formula test
         run: brew test toslibc
+
+      - name: 🧼 Lint formula (non-fatal)
+        run: |
+          brew audit --strict --online toslibc || true
 
