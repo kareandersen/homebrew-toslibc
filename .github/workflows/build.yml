@@ -1,0 +1,30 @@
+name: Build and Test Formula
+
+on:
+  push:
+    paths:
+      - Formula/**
+      - .github/workflows/**
+      - README.md
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: 🧱 Checkout repo
+        uses: actions/checkout@v3
+
+      - name: 🍺 Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: 🔍 Tap current repo
+        run: brew tap --force-auto-update ./.
+
+      - name: 🔨 Install toslibc from source
+        run: brew install --build-from-source toslibc
+
+      - name: ✅ Run formula test
+        run: brew test toslibc
+

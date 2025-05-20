@@ -1,5 +1,7 @@
 # toslibc Homebrew Tap
 
+![Build status](https://github.com/kareandersen/homebrew-toslibc/actions/workflows/build.yml/badge.svg)
+
 > This Homebrew formula packages the excellent [toslibc](https://github.com/frno7/toslibc) project by **Fredrik Noring** — a modern C standard library tailored for Atari TOS development. All credit for the library and the tools goes to [Fredrik](https://github.com/frno7). This tap simply makes it easier to install and use on macOS via Homebrew.
 
 ## Installation
