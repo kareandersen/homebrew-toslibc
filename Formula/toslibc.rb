@@ -18,42 +18,42 @@ class Toslibc < Formula
     cp_r examples_src.children, examples_dst, preserve: true
     rm examples_dst/"Makefile" # Replace the example Makefile with one that works out of the box
     (examples_dst/"Makefile").atomic_write <<~EOS
-#  SPDX-License-Identifier: LGPL-2.1
+      #  SPDX-License-Identifier: LGPL-2.1
 
-PRGS\t= alert.prg cookie.tos hello.tos window.prg xbra.prg
+      PRGS\t= alert.prg cookie.tos hello.tos window.prg xbra.prg
 
-# Derive source files
-SRCS\t= $(patsubst %.prg,%.c,$(patsubst %.tos,%.c,$(PRGS)))
-OBJS\t= $(SRCS:.c=.o)
-ROBJS\t= $(OBJS:.o=.r.o)
+      # Derive source files
+      SRCS\t= $(patsubst %.prg,%.c,$(patsubst %.tos,%.c,$(PRGS)))
+      OBJS\t= $(SRCS:.c=.o)
+      ROBJS\t= $(OBJS:.o=.r.o)
 
-CC\t= m68k-elf-gcc
-LD\t= m68k-elf-ld
-TOSLINK\t= toslink
+      CC\t= m68k-elf-gcc
+      LD\t= m68k-elf-ld
+      TOSLINK\t= toslink
 
-CFLAGS   = $(shell pkg-config --cflags toslibc)
-LDLIBS   = $(shell pkg-config --libs toslibc)
-LDFLAGS  = $(shell pkg-config --variable=TOSLIBC_LDFLAGS toslibc)
+      CFLAGS   = $(shell pkg-config --cflags toslibc)
+      LDLIBS   = $(shell pkg-config --libs toslibc)
+      LDFLAGS  = $(shell pkg-config --variable=TOSLIBC_LDFLAGS toslibc)
 
-.PHONY: all clean
+      .PHONY: all clean
 
-all: $(PRGS)
+      all: $(PRGS)
 
-%.o: %.c
-\t$(CC) $(CFLAGS) -c -o $@ $<
+      %.o: %.c
+      \t$(CC) $(CFLAGS) -c -o $@ $<
 
-%.r.o: %.o
-\t$(LD) $< $(LDLIBS) $(LDFLAGS) -o $@
+      %.r.o: %.o
+      \t$(LD) $< $(LDLIBS) $(LDFLAGS) -o $@
 
-%.prg: %.r.o
-\t$(TOSLINK) -o $@ $<
+      %.prg: %.r.o
+      \t$(TOSLINK) -o $@ $<
 
-%.tos: %.r.o
-\t$(TOSLINK) -o $@ $<
+      %.tos: %.r.o
+      \t$(TOSLINK) -o $@ $<
 
-clean:
-\trm -f *.o *.r.o *.prg *.tos
-EOS
+      clean:
+      \trm -f *.o *.r.o *.prg *.tos
+    EOS
 
     odie "Failed to write example/Makefile" unless File.exist?(examples_dst/"Makefile")
 
@@ -75,23 +75,22 @@ EOS
 
     (pkgconfig = lib/"pkgconfig").mkpath
     (pkgconfig/"toslibc.pc").write <<~EOS
-prefix=#{opt_prefix}
-includedir=${prefix}/usr/include
-libdir=${prefix}/usr/lib
-ldscript=${prefix}/script/prg.ld
+      prefix=#{opt_prefix}
+      includedir=${prefix}/usr/include
+      libdir=${prefix}/usr/lib
+      ldscript=${prefix}/script/prg.ld
 
-Name: toslibc
-Description: 32-bit C standard library for Atari TOS
-Version: HEAD
-Cflags: -nostdinc -nostdinc -I${includedir} -isystem #{gcc_include} -O2 -Wall -march=68000 -fno-PIC -D_TOSLIBC_SOURCE
-Libs: -L${libdir} -ltoslibc
-TOSLIBC_LDFLAGS = -nostdlib --relocatable --gc-sections --strip-all --entry _start -T ${ldscript}
-EOS
+      Name: toslibc
+      Description: 32-bit C standard library for Atari TOS
+      Version: HEAD
+      Cflags: -nostdinc -nostdinc -I${includedir} -isystem #{gcc_include} -O2 -Wall -march=68000 -fno-PIC -D_TOSLIBC_SOURCE
+      Libs: -L${libdir} -ltoslibc
+      TOSLIBC_LDFLAGS = -nostdlib --relocatable --gc-sections --strip-all --entry _start -T ${ldscript}
+    EOS
   end
 
   test do
-    (testpath/"test.c").write
-<<~EOS
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <stdlib.h>
       #include <tos/gemdos.h>
@@ -100,7 +99,7 @@ EOS
         printf("Hello TOS!\\r\\n");
         return 0;
       }
-EOS
+    EOS
 
     cc = Formula["m68k-elf-gcc"].opt_bin/"m68k-elf-gcc"
     ld = Formula["m68k-elf-binutils"].opt_bin/"m68k-elf-ld"
