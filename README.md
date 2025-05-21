@@ -1,8 +1,8 @@
-# toslibc Homebrew Tap
+# TOS/libc Homebrew Tap
 
 ![Build status](https://github.com/kareandersen/homebrew-toslibc/actions/workflows/build.yml/badge.svg)
 
-> This Homebrew formula packages the excellent [toslibc](https://github.com/frno7/toslibc) project by **Fredrik Noring** — a modern C standard library tailored for Atari TOS development. All credit for the library and the tools goes to [Fredrik](https://github.com/frno7). This tap simply makes it easier to install and use on macOS via Homebrew.
+> This Homebrew formula packages the excellent [TOS/libc](https://github.com/frno7/toslibc) project by **Fredrik Noring** — a modern C standard library tailored for Atari TOS development. All credit for the library and the tools goes to [Fredrik](https://github.com/frno7). This tap simply makes it easier to install and use on macOS via Homebrew.
 
 ## Installation
 
@@ -15,7 +15,7 @@ brew install toslibc
 
 ## Usage
 
-To compile programs using `toslibc`, utilize `pkg-config` to retrieve the necessary compiler and linker flags.
+To compile programs using `TOS/libc`, utilize `pkg-config` to retrieve the necessary compiler and linker flags.
 
 ### Compile Flags
 
@@ -98,9 +98,9 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 
 ## License
 
-This formula and its packaging metadata are distributed under the terms of the [LGPL-2.1 License](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html), consistent with the upstream `toslibc` licensing model.
+This formula and its packaging metadata are distributed under the terms of the [LGPL-2.1 License](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html), consistent with the upstream `TOS/libc` licensing model.
 
-Upstream `toslibc` is triple-licensed under:
+Upstream `TOS/libc` is triple-licensed under:
 
 - **GPL-2.0**
 - **LGPL-2.1**
