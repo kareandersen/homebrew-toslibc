@@ -1,24 +1,24 @@
 class Toslibc < Formula
-  desc "TOS/libc is a 32-bit C standard library to compile programs for Atari TOS."
+  desc "TOS/libc is a 32-bit C standard library to compile programs for Atari TOS"
   homepage "https://github.com/frno7/toslibc"
+  license "LGPL-2.1-only"
   head "https://github.com/frno7/toslibc.git", branch: "main"
-  license "LGPL-2.1"
 
-  depends_on "gcc" => :build    #Homebrew gcc, needed for endian extensions
-  depends_on "pkg-config"
-  depends_on "m68k-elf-binutils"
+  depends_on "gcc" => :build
   depends_on "m68k-elf-gcc"
+  depends_on "m68k-elf-binutils"
+  depends_on "pkg-config"
 
   def install
     examples_src = buildpath/"example"
     examples_dst = pkgshare/"examples"
     examples_dst.mkpath
 
+
     cp_r examples_src.children, examples_dst, preserve: true
-    Dir.glob("#{examples_dst}/*.{o,r.o,d,PRG,TOS}").each { |f| rm_f f }
-    rm_f examples_dst/"Makefile" #Replace the example Makefile with one that works out of the box
-    (example_makefile = examples_dst/"Makefile").atomic_write <<~EOS
-# SPDX-License-Identifier: LGPL-2.1
+    rm examples_dst/"Makefile" # Replace the example Makefile with one that works out of the box
+    (examples_dst/"Makefile").atomic_write <<~EOS
+#  SPDX-License-Identifier: LGPL-2.1
 
 PRGS\t= alert.prg cookie.tos hello.tos window.prg xbra.prg
 
@@ -67,7 +67,11 @@ EOS
     (prefix/"script").install "script/prg.ld"
     bin.install "tool/toslink"
 
-    gcc_include = Utils.safe_popen_read(Formula["m68k-elf-gcc"].opt_bin/"m68k-elf-gcc", "-print-file-name=include").chomp
+    m68k_gcc = Formula["m68k-elf-gcc"]
+    gcc_bin = m68k_gcc.opt_bin/"m68k-elf-gcc"
+    gcc_include = Utils.safe_popen_read(
+      gcc_bin, "-print-file-name=include"
+    ).chomp
 
     (pkgconfig = lib/"pkgconfig").mkpath
     (pkgconfig/"toslibc.pc").write <<~EOS
@@ -82,12 +86,12 @@ Version: HEAD
 Cflags: -nostdinc -nostdinc -I${includedir} -isystem #{gcc_include} -O2 -Wall -march=68000 -fno-PIC -D_TOSLIBC_SOURCE
 Libs: -L${libdir} -ltoslibc
 TOSLIBC_LDFLAGS = -nostdlib --relocatable --gc-sections --strip-all --entry _start -T ${ldscript}
-
 EOS
-    end
+  end
 
-    test do
-      (testpath/"test.c").write <<~EOS
+  test do
+    (testpath/"test.c").write
+<<~EOS
       #include <stdio.h>
       #include <stdlib.h>
       #include <tos/gemdos.h>
@@ -98,26 +102,29 @@ EOS
       }
 EOS
 
-      cc = Formula["m68k-elf-gcc"].opt_bin/"m68k-elf-gcc"
-      ld = Formula["m68k-elf-binutils"].opt_bin/"m68k-elf-ld"
-      toslink = bin/"toslink"
-      pkg = Formula["pkg-config"].opt_bin/"pkg-config"
+    cc = Formula["m68k-elf-gcc"].opt_bin/"m68k-elf-gcc"
+    ld = Formula["m68k-elf-binutils"].opt_bin/"m68k-elf-ld"
+    toslink = bin/"toslink"
+    pkg = Formula["pkg-config"].opt_bin/"pkg-config"
 
-      cflags   = Utils.safe_popen_read(pkg, "--cflags", "toslibc").chomp.split
-      ldlibs   = Utils.safe_popen_read(pkg, "--libs", "toslibc").chomp.split
-      ldflags  = Utils.safe_popen_read(pkg, "--variable=TOSLIBC_LDFLAGS", "toslibc").chomp.split
+    cflags   = Utils.safe_popen_read(pkg, "--cflags", "toslibc").chomp.split
+    ldlibs   = Utils.safe_popen_read(pkg, "--libs", "toslibc").chomp.split
+    ldflags  = Utils.safe_popen_read(pkg, "--variable=TOSLIBC_LDFLAGS", "toslibc").chomp.split
 
-      raise "Compilation failed" unless system(cc, *cflags, "-c", "test.c", "-o", "test.o")
-      raise "Linking failed" unless system(ld, *ldlibs, *ldflags, "test.o", "-o", "test.r.o")
-      rainse "TOS conversion failed" unless system(toslink, "-o", "test.prg", "test.r.o")
-      assert_predicate testpath/"test.prg", :exist?
+    raise "Compilation failed" unless system(cc, *cflags, "-c", "test.c", "-o", "test.o")
 
-      output = shell_output("file test.prg")
-      puts "resulting test binary: #{output}"
-      assert_match "Atari ST M68K contiguous executable", output
-    end
+    raise "Linking failed" unless system(ld, *ldlibs, *ldflags, "test.o", "-o", "test.r.o")
 
-    def caveats
+    raise "TOS conversion failed" unless system(toslink, "-o", "test.prg", "test.r.o")
+
+    assert_predicate testpath/"test.prg", :exist?
+
+    output = shell_output("file test.prg")
+    puts "resulting test binary: #{output}"
+    assert_match "Atari ST M68K contiguous executable", output
+  end
+
+  def caveats
 <<~EOS
   Example programs have been installed to:
     #{opt_pkgshare}/examples
@@ -128,6 +135,5 @@ EOS
 
   You must have m68k-elf-gcc and pkg-config in your PATH.
 EOS
-    end
-
+  end
 end
