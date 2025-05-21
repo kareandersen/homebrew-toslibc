@@ -8,7 +8,7 @@
 
 ```sh
 brew tap kareandersen/toslibc
-brew install toslibc
+brew install --HEAD toslibc
 ```
 
 > **Note:** Required dependencies, including `m68k-elf-gcc` and `m68k-elf-binutils`, will be installed automatically by Homebrew.
