@@ -5,15 +5,14 @@ class Toslibc < Formula
   head "https://github.com/frno7/toslibc.git", branch: "main"
 
   depends_on "gcc" => :build
-  depends_on "m68k-elf-gcc"
   depends_on "m68k-elf-binutils"
+  depends_on "m68k-elf-gcc"
   depends_on "pkg-config"
 
   def install
     examples_src = buildpath/"example"
     examples_dst = pkgshare/"examples"
     examples_dst.mkpath
-
 
     cp_r examples_src.children, examples_dst, preserve: true
     rm examples_dst/"Makefile" # Replace the example Makefile with one that works out of the box
@@ -89,6 +88,19 @@ class Toslibc < Formula
     EOS
   end
 
+  def caveats
+    <<~EOS
+      Example programs have been installed to:
+        #{opt_pkgshare}/examples
+
+      To build them:
+        cd #{opt_pkgshare}/examples
+        make
+
+      You must have m68k-elf-gcc and pkg-config in your PATH.
+    EOS
+  end
+
   test do
     (testpath/"test.c").write <<~EOS
       #include <stdio.h>
@@ -116,23 +128,10 @@ class Toslibc < Formula
 
     raise "TOS conversion failed" unless system(toslink, "-o", "test.prg", "test.r.o")
 
-    assert_predicate testpath/"test.prg", :exist?
+    assert_path_exists testpath/"test.prg"
 
     output = shell_output("file test.prg")
     puts "resulting test binary: #{output}"
     assert_match "Atari ST M68K contiguous executable", output
-  end
-
-  def caveats
-<<~EOS
-  Example programs have been installed to:
-    #{opt_pkgshare}/examples
-
-  To build them:
-    cd #{opt_pkgshare}/examples
-    make
-
-  You must have m68k-elf-gcc and pkg-config in your PATH.
-EOS
   end
 end
