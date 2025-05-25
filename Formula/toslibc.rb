@@ -15,8 +15,8 @@ class Toslibc < Formula
     examples_dst.mkpath
 
     cp_r examples_src.children, examples_dst, preserve: true
-    rm examples_dst/"Makefile" # Replace the example Makefile with one that works out of the box
-    (examples_dst/"Makefile").atomic_write <<~EOS
+    #Temporary step as we converge on a single makefile
+    (examples_dst/"Makefile.brew").atomic_write <<~EOS
       #  SPDX-License-Identifier: LGPL-2.1
 
       PRGS\t= alert.prg cookie.tos hello.tos window.prg xbra.prg
@@ -30,7 +30,7 @@ class Toslibc < Formula
       LD\t= m68k-elf-ld
       TOSLINK\t= toslink
 
-      CFLAGS   = $(shell pkg-config --cflags toslibc)
+      CFLAGS   = -march=68000 $(shell pkg-config --cflags toslibc)
       LDLIBS   = $(shell pkg-config --libs toslibc)
       LDFLAGS  = $(shell pkg-config --variable=TOSLIBC_LDFLAGS toslibc)
 
@@ -54,7 +54,7 @@ class Toslibc < Formula
       \trm -f *.o *.r.o *.prg *.tos
     EOS
 
-    odie "Failed to write example/Makefile" unless File.exist?(examples_dst/"Makefile")
+    odie "Failed to write example/Makefile.brew" unless File.exist?(examples_dst/"Makefile.brew")
 
     gcc_major = Formula["gcc"].any_installed_version.major
     host_cc = Formula["gcc"].opt_bin/"gcc-#{gcc_major}"
@@ -82,7 +82,7 @@ class Toslibc < Formula
       Name: toslibc
       Description: 32-bit C standard library for Atari TOS
       Version: HEAD
-      Cflags: -nostdinc -nostdinc -I${includedir} -isystem #{gcc_include} -O2 -Wall -march=68000 -fno-PIC -D_TOSLIBC_SOURCE
+      Cflags: -isystem ${includedir} -fno-PIC
       Libs: -L${libdir} -ltoslibc
       TOSLIBC_LDFLAGS = -nostdlib --relocatable --gc-sections --strip-all --entry _start -T ${ldscript}
     EOS
@@ -97,7 +97,11 @@ class Toslibc < Formula
         cd #{opt_pkgshare}/examples
         make
 
-      You must have m68k-elf-gcc and pkg-config in your PATH.
+      You must have `m68k-elf-gcc` and `pkg-config` in your PATH.
+
+      If you encounter build errors referencing macOS SDK paths,
+      make sure to unset environment variables like `CFLAGS` and `CPATH`
+      which may interfere with cross-compilation.
     EOS
   end
 
@@ -122,7 +126,13 @@ class Toslibc < Formula
     ldlibs   = Utils.safe_popen_read(pkg, "--libs", "toslibc").chomp.split
     ldflags  = Utils.safe_popen_read(pkg, "--variable=TOSLIBC_LDFLAGS", "toslibc").chomp.split
 
-    raise "Compilation failed" unless system(cc, *cflags, "-c", "test.c", "-o", "test.o")
+    with_env(   #macOS likes to bring in a lot of junk here
+      "CFLAGS" => nil,
+      "CPATH" => nil,
+      "C_INCLUDE_PATH" => nil,
+    ) do
+      raise "Compilation failed" unless system(cc, "-march=68000", *cflags, "-c", "test.c", "-o", "test.o")
+    end
 
     raise "Linking failed" unless system(ld, *ldlibs, *ldflags, "test.o", "-o", "test.r.o")
 
