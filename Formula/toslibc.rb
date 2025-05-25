@@ -62,7 +62,7 @@ class Toslibc < Formula
     system "make", "CC=#{host_cc}", "TARGET_COMPILE=m68k-elf-"
 
     (prefix/"usr/include").install Dir["include/toslibc/*"]
-    (prefix/"usr/lib").install "lib/toslibc.a" => "libtoslibc.a"
+    (prefix/"usr/lib").install "lib/libc.a" => "libtoslibc.a"
     (prefix/"script").install "script/prg.ld"
     bin.install "tool/toslink"
 
