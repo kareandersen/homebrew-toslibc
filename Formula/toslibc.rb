@@ -30,7 +30,7 @@ class Toslibc < Formula
       LD\t= m68k-elf-ld
       TOSLINK\t= toslink
 
-      CFLAGS   = -march=68000 $(shell pkg-config --cflags toslibc)
+      CFLAGS   = $(shell pkg-config --cflags toslibc)
       LDLIBS   = $(shell pkg-config --libs toslibc)
       LDFLAGS  = $(shell pkg-config --variable=TOSLIBC_LDFLAGS toslibc)
 
@@ -82,7 +82,7 @@ class Toslibc < Formula
       Name: toslibc
       Description: 32-bit C standard library for Atari TOS
       Version: HEAD
-      Cflags: -isystem ${includedir} -fno-PIC
+      Cflags: -m68000 -isystem ${includedir} -fno-PIC
       Libs: -L${libdir} -ltoslibc
       TOSLIBC_LDFLAGS = -nostdlib --relocatable --gc-sections --strip-all --entry _start -T ${ldscript}
     EOS
@@ -131,7 +131,7 @@ class Toslibc < Formula
       "CPATH" => nil,
       "C_INCLUDE_PATH" => nil,
     ) do
-      raise "Compilation failed" unless system(cc, "-march=68000", *cflags, "-c", "test.c", "-o", "test.o")
+      raise "Compilation failed" unless system(cc, *cflags, "-c", "test.c", "-o", "test.o")
     end
 
     raise "Linking failed" unless system(ld, *ldlibs, *ldflags, "test.o", "-o", "test.r.o")
