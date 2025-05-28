@@ -64,7 +64,6 @@ class Toslibc < Formula
     (prefix/"usr/include").install Dir["include/toslibc/*"]
     (prefix/"usr/lib").install "lib/libc.a" => "libtoslibc.a"
     (prefix/"script").install "script/prg.ld"
-    bin.install "tool/m68k-atari-tos-gnu-toslink"
 
     m68k_gcc = Formula["m68k-elf-gcc"]
     gcc_bin = m68k_gcc.opt_bin/"m68k-elf-gcc"
