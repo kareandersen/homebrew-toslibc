@@ -1,5 +1,5 @@
 class Toslibc < Formula
-  desc "TOS/libc is a 32-bit C standard library to compile programs for Atari TOS"
+  desc "32-bit C standard library for Atari TOS"
   homepage "https://github.com/frno7/toslibc"
   license "LGPL-2.1-only"
   head "https://github.com/frno7/toslibc.git", branch: "main"
@@ -10,63 +10,38 @@ class Toslibc < Formula
   depends_on "pkg-config"
 
   def install
-    examples_src = buildpath/"example"
-    examples_dst = pkgshare/"examples"
-    examples_dst.mkpath
-
-    cp_r examples_src.children, examples_dst, preserve: true
-    #Temporary step as we converge on a single makefile
-    (examples_dst/"Makefile.brew").atomic_write <<~EOS
-      #  SPDX-License-Identifier: LGPL-2.1
-
-      PRGS\t= alert.prg cookie.tos hello.tos window.prg xbra.prg
-
-      # Derive source files
-      SRCS\t= $(patsubst %.prg,%.c,$(patsubst %.tos,%.c,$(PRGS)))
-      OBJS\t= $(SRCS:.c=.o)
-      ROBJS\t= $(OBJS:.o=.r.o)
-
-      CC\t= m68k-elf-gcc
-      LD\t= m68k-elf-ld
-      TOSLINK\t= m68k-atari-tos-gnu-toslink
-
-      CFLAGS   = $(shell pkg-config --cflags toslibc)
-      LDLIBS   = $(shell pkg-config --libs toslibc)
-      LDFLAGS  = $(shell pkg-config --variable=TOSLIBC_LDFLAGS toslibc)
-
-      .PHONY: all clean
-
-      all: $(PRGS)
-
-      %.o: %.c
-      \t$(CC) $(CFLAGS) -c -o $@ $<
-
-      %.r.o: %.o
-      \t$(LD) $< $(LDLIBS) $(LDFLAGS) -o $@
-
-      %.prg: %.r.o
-      \t$(TOSLINK) -o $@ $<
-
-      %.tos: %.r.o
-      \t$(TOSLINK) -o $@ $<
-
-      clean:
-      \trm -f *.o *.r.o *.prg *.tos
-    EOS
-
-    odie "Failed to write example/Makefile.brew" unless File.exist?(examples_dst/"Makefile.brew")
+    ENV.delete("CPATH")
+    ENV.delete("SDKROOT")
+    ENV.remove "CFLAGS", "-isysroot"
+    ENV.remove "CPPFLAGS", "-isysroot"
 
     gcc_major = Formula["gcc"].any_installed_version.major
     host_cc = Formula["gcc"].opt_bin/"gcc-#{gcc_major}"
 
-    system "make", "CC=#{host_cc}", "TARGET_COMPILE=m68k-elf-"
+    stage_dir = buildpath/"stage"
+    toolchain_prefix = "m68k-atari-tos-gnu"
+
+    system "make",
+      "install-lib",
+      "install-example",
+      "prefix=#{prefix}",
+      "toolchain-prefix=#{toolchain_prefix}",
+      "bindir=#{prefix}/bin",
+      "DESTDIR=#{stage_dir}",
+      "TARGET_COMPILE=m68k-elf-",
+      "CC=#{host_cc}"
 
     (prefix/"usr/include").install Dir["include/toslibc/*"]
-    (prefix/"usr/lib").install "lib/libc.a" => "libtoslibc.a"
-    (prefix/"script").install "script/prg.ld"
+    (prefix/"usr/lib").install "lib/libc.a"
+    (prefix/"lib/script").install "script/prg.ld"
 
-    m68k_gcc = Formula["m68k-elf-gcc"]
-    gcc_bin = m68k_gcc.opt_bin/"m68k-elf-gcc"
+    example_src = stage_dir/prefix.relative_path_from(Pathname.new("/"))/"share/toslibc/example"
+    example_dst = pkgshare/"toslibc/example"
+    example_dst.mkpath
+    cp_r Dir[example_src/"*"], example_dst, preserve: true
+
+    m68k_gcc = Formula["m68k-atari-tos-gnu-gcc"]
+    gcc_bin = m68k_gcc.opt_bin/"m68k-atari-tos-gnu-gcc"
     gcc_include = Utils.safe_popen_read(
       gcc_bin, "-print-file-name=include"
     ).chomp
@@ -74,9 +49,9 @@ class Toslibc < Formula
     (pkgconfig = lib/"pkgconfig").mkpath
     (pkgconfig/"toslibc.pc").write <<~EOS
       prefix=#{opt_prefix}
-      includedir=${prefix}/usr/include
-      libdir=${prefix}/usr/lib
-      ldscript=${prefix}/script/prg.ld
+     includedir=${prefix}/usr/include
+     libdir=${prefix}/usr/lib
+     ldscript=${prefix}/script/prg.ld
 
       Name: toslibc
       Description: 32-bit C standard library for Atari TOS
@@ -90,10 +65,10 @@ class Toslibc < Formula
   def caveats
     <<~EOS
       Example programs have been installed to:
-        #{opt_pkgshare}/examples
+        #{opt_pkgshare}/example
 
       To build them:
-        cd #{opt_pkgshare}/examples
+        cd #{opt_pkgshare}/example
         make
 
       You must have `m68k-elf-gcc` and `pkg-config` in your PATH.
