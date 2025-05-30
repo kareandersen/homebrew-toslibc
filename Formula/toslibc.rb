@@ -40,26 +40,26 @@ class Toslibc < Formula
     example_dst.mkpath
     cp_r Dir[example_src/"*"], example_dst, preserve: true
 
-    m68k_gcc = Formula["m68k-atari-tos-gnu-gcc"]
-    gcc_bin = m68k_gcc.opt_bin/"m68k-atari-tos-gnu-gcc"
-    gcc_include = Utils.safe_popen_read(
-      gcc_bin, "-print-file-name=include"
-    ).chomp
+    #m68k_gcc = Formula["m68k-atari-tos-gnu-gcc"]
+    #gcc_bin = m68k_gcc.opt_bin/"m68k-atari-tos-gnu-gcc"
+    #gcc_include = Utils.safe_popen_read(
+    #  gcc_bin, "-print-file-name=include"
+    #).chomp
 
-    (pkgconfig = lib/"pkgconfig").mkpath
-    (pkgconfig/"toslibc.pc").write <<~EOS
-      prefix=#{opt_prefix}
-     includedir=${prefix}/usr/include
-     libdir=${prefix}/usr/lib
-     ldscript=${prefix}/script/prg.ld
+    #(pkgconfig = lib/"pkgconfig").mkpath
+    #(pkgconfig/"toslibc.pc").write <<~EOS
+    #  prefix=#{opt_prefix}
+    # includedir=${prefix}/usr/include
+    # libdir=${prefix}/usr/lib
+    # ldscript=${prefix}/script/prg.ld
 
-      Name: toslibc
-      Description: 32-bit C standard library for Atari TOS
-      Version: HEAD
-      Cflags: -m68000 -isystem ${includedir} -fno-PIC
-      Libs: -L${libdir} -ltoslibc
-      TOSLIBC_LDFLAGS = -nostdlib --relocatable --gc-sections --strip-all --entry _start -T ${ldscript}
-    EOS
+    #  Name: toslibc
+    #  Description: 32-bit C standard library for Atari TOS
+    #  Version: HEAD
+    #  Cflags: -m68000 -isystem ${includedir} -fno-PIC
+    #  Libs: -L${libdir} -ltoslibc
+    #  TOSLIBC_LDFLAGS = -nostdlib --relocatable --gc-sections --strip-all --entry _start -T ${ldscript}
+    #EOS
   end
 
   def caveats
