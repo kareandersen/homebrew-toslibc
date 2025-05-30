@@ -23,6 +23,9 @@ jobs:
         run: brew tap kareandersen/homebrew-toslibc
 
       - name: 🔨 Install toslibc from source
+        run: brew install --HEAD m68k-atari-tos-gnu-gcc
+
+      - name: 🔨 Install toslibc from source
         run: brew install --HEAD toslibc
 
       - name: ✅ Run formula test
