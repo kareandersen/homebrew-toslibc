@@ -19,7 +19,7 @@ class M68kAtariTosGnuGcc < Formula
   sysroot = opt_prefix
   gcc_major = Formula["gcc"].any_installed_version.major
   host_cc = Formula["gcc"].opt_bin/"gcc-#{gcc_major}"
-  toslibc_prefix = Formula["local/toslibc/toslibc"].opt_prefix
+  toslibc_prefix = Formula["kareandersen/toslibc/toslibc"].opt_prefix
 
   system "make",
     "install-compiler",
