@@ -19,14 +19,14 @@ class Toslibc < Formula
     host_cc = Formula["gcc"].opt_bin/"gcc-#{gcc_major}"
 
     stage_dir = buildpath/"stage"
-    toolchain_prefix = "m68k-atari-tos-gnu"
 
     system "make",
       "install-lib",
       "install-example",
       "prefix=#{prefix}",
-      "toolchain-prefix=#{toolchain_prefix}",
-      "bindir=#{prefix}/bin",
+      "bindir=#{opt_bin}",
+      "datarootdir=#{pkgshare}",
+      "exampledir=#{pkgshare}/example",
       "DESTDIR=#{stage_dir}",
       "TARGET_COMPILE=m68k-elf-",
       "CC=#{host_cc}"
@@ -35,10 +35,11 @@ class Toslibc < Formula
     (prefix/"usr/lib").install "lib/libc.a"
     (prefix/"lib/script").install "script/prg.ld"
 
-    example_src = stage_dir/prefix.relative_path_from(Pathname.new("/"))/"share/toslibc/example"
-    example_dst = pkgshare/"toslibc/example"
+    example_src = stage_dir/pkgshare.relative_path_from(Pathname.new("/"))/"example"
+    example_dst = prefix/"share/example"
     example_dst.mkpath
-    cp_r Dir[example_src/"*"], example_dst, preserve: true
+    cp_r Dir[example_src/"*.c"], example_dst, preserve: true if example_src&.directory?
+    cp_r Dir[example_src/"Makefile"], example_dst, preserve: true if example_src&.directory?
 
     #m68k_gcc = Formula["m68k-atari-tos-gnu-gcc"]
     #gcc_bin = m68k_gcc.opt_bin/"m68k-atari-tos-gnu-gcc"
@@ -80,43 +81,8 @@ class Toslibc < Formula
   end
 
   test do
-    return true
-    (testpath/"test.c").write <<~EOS
-      #include <stdio.h>
-      #include <stdlib.h>
-      #include <tos/gemdos.h>
-
-      int main(int argc, char** argv) {
-        printf("Hello TOS!\\r\\n");
-        return 0;
-      }
-    EOS
-
-    cc = Formula["m68k-elf-gcc"].opt_bin/"m68k-elf-gcc"
-    ld = Formula["m68k-elf-binutils"].opt_bin/"m68k-elf-ld"
-    toslink = bin/"toslink"
-    pkg = Formula["pkg-config"].opt_bin/"pkg-config"
-
-    cflags   = Utils.safe_popen_read(pkg, "--cflags", "toslibc").chomp.split
-    ldlibs   = Utils.safe_popen_read(pkg, "--libs", "toslibc").chomp.split
-    ldflags  = Utils.safe_popen_read(pkg, "--variable=TOSLIBC_LDFLAGS", "toslibc").chomp.split
-
-    with_env(   #macOS likes to bring in a lot of junk here
-      "CFLAGS" => nil,
-      "CPATH" => nil,
-      "C_INCLUDE_PATH" => nil,
-    ) do
-      raise "Compilation failed" unless system(cc, *cflags, "-c", "test.c", "-o", "test.o")
-    end
-
-    raise "Linking failed" unless system(ld, *ldlibs, *ldflags, "test.o", "-o", "test.r.o")
-
-    raise "TOS conversion failed" unless system(toslink, "-o", "test.prg", "test.r.o")
-
-    assert_path_exists testpath/"test.prg"
-
-    output = shell_output("file test.prg")
-    puts "resulting test binary: #{output}"
-    assert_match "Atari ST M68K contiguous executable", output
+    assert_predicate prefix/"usr/include/stdio.h", :exist?
+    assert_predicate prefix/"usr/lib/libc.a", :exist?
+    assert_predicate lib/"script/prg.ld", :exist?
   end
 end
