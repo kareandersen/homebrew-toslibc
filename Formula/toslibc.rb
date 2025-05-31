@@ -26,6 +26,7 @@ class Toslibc < Formula
       "prefix=#{prefix}",
       "bindir=#{opt_bin}",
       "datarootdir=#{pkgshare}",
+      "libdir=#{prefix}/usr/lib",
       "exampledir=#{pkgshare}/example",
       "DESTDIR=#{stage_dir}",
       "TARGET_COMPILE=m68k-elf-",
