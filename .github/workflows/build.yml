@@ -22,16 +22,19 @@ jobs:
       - name: 🔍 Tap current repo
         run: brew tap kareandersen/homebrew-toslibc
 
-      - name: 🔨 Install toslibc from source
+      - name: 🔨 Install m68k-atari-tos-gnu-gcc from source (includes binutils)
         run: brew install --HEAD m68k-atari-tos-gnu-gcc
 
       - name: 🔨 Install toslibc from source
         run: brew install --HEAD toslibc
 
-      - name: ✅ Run formula test
-        run: brew test toslibc
-
-      - name: 🧼 Lint formula (non-fatal)
+      - name: ✅ Run tests for both formulas
         run: |
+          brew test m68k-atari-tos-gnu-gcc
+          brew test toslibc
+
+      - name: 🧼 Lint formulas (non-fatal)
+        run: |
+          brew audit --strict --online m68k-atari-tos-gnu-gcc || true
           brew audit --strict --online toslibc || true
 

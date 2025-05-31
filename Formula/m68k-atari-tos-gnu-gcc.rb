@@ -1,12 +1,12 @@
 class M68kAtariTosGnuGcc < Formula
   desc "32-bit C compiler for Atari TOS"
   homepage "https://github.com/frno7/toslibc"
+  license any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MIT"]
   head "https://github.com/frno7/toslibc.git", branch: "main"
-  license "GPL-2"
 
   depends_on "gcc" => :build
-  depends_on "m68k-elf-gcc"
   depends_on "kareandersen/toslibc/toslibc"
+  depends_on "m68k-elf-gcc"
 
   def install
     ENV.delete("CPATH")
@@ -43,8 +43,9 @@ class M68kAtariTosGnuGcc < Formula
   end
 
   test do
-    system "#{bin}/m68k-atari-tos-gnu-gcc", "--version"
-    system "#{bin}/m68k-atari-tos-gnu-cc", "--version"
+    system bin/"m68k-atari-tos-gnu-gcc", "--version"
+    system bin/"m68k-atari-tos-gnu-cc", "--version"
+    system bin/"m68k-atari-tos-gnu-ld", "--version"
+    system bin/"m68k-atari-tos-gnu-toslink", "--version"
   end
 end
-

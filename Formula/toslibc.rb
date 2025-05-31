@@ -1,7 +1,7 @@
 class Toslibc < Formula
   desc "32-bit C standard library for Atari TOS"
   homepage "https://github.com/frno7/toslibc"
-  license "LGPL-2.1-only"
+  license any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MIT"]
   head "https://github.com/frno7/toslibc.git", branch: "main"
 
   depends_on "gcc" => :build
@@ -27,41 +27,33 @@ class Toslibc < Formula
       "bindir=#{opt_bin}",
       "datarootdir=#{pkgshare}",
       "libdir=#{prefix}/usr/lib",
+      "includedir=#{prefix}/usr/include",
+      "ldscriptdir=#{lib}/script",
       "exampledir=#{pkgshare}/example",
       "DESTDIR=#{stage_dir}",
       "TARGET_COMPILE=m68k-elf-",
       "CC=#{host_cc}"
 
+    example_src = stage_dir/pkgshare.relative_path_from(Pathname.new("/"))/"example"
+    (pkgshare/"example").install Dir[example_src/"*"]
+
     (prefix/"usr/include").install Dir["include/toslibc/*"]
     (prefix/"usr/lib").install "lib/libc.a"
     (prefix/"lib/script").install "script/prg.ld"
 
-    example_src = stage_dir/pkgshare.relative_path_from(Pathname.new("/"))/"example"
-    example_dst = prefix/"share/example"
-    example_dst.mkpath
-    cp_r Dir[example_src/"*.c"], example_dst, preserve: true if example_src&.directory?
-    cp_r Dir[example_src/"Makefile"], example_dst, preserve: true if example_src&.directory?
+    system "make",
+      "install-pkg-config",
+      "prefix=#{prefix}",
+      "libdir=#{opt_prefix}/usr/lib",
+      "includedir=#{opt_prefix}/usr/include",
+      "ldscriptdir=#{opt_prefix}/lib/script",
+      "DESTDIR=#{stage_dir}"
 
-    #m68k_gcc = Formula["m68k-atari-tos-gnu-gcc"]
-    #gcc_bin = m68k_gcc.opt_bin/"m68k-atari-tos-gnu-gcc"
-    #gcc_include = Utils.safe_popen_read(
-    #  gcc_bin, "-print-file-name=include"
-    #).chomp
-
-    #(pkgconfig = lib/"pkgconfig").mkpath
-    #(pkgconfig/"toslibc.pc").write <<~EOS
-    #  prefix=#{opt_prefix}
-    # includedir=${prefix}/usr/include
-    # libdir=${prefix}/usr/lib
-    # ldscript=${prefix}/script/prg.ld
-
-    #  Name: toslibc
-    #  Description: 32-bit C standard library for Atari TOS
-    #  Version: HEAD
-    #  Cflags: -m68000 -isystem ${includedir} -fno-PIC
-    #  Libs: -L${libdir} -ltoslibc
-    #  TOSLIBC_LDFLAGS = -nostdlib --relocatable --gc-sections --strip-all --entry _start -T ${ldscript}
-    #EOS
+    staged_pc = stage_dir/opt_prefix.relative_path_from(Pathname.new("/"))/"usr/lib/pkgconfig/toslibc.pc"
+    inreplace staged_pc do |s|
+      s.gsub! prefix, opt_prefix
+    end
+    (lib/"pkgconfig").install staged_pc
   end
 
   def caveats
@@ -71,9 +63,13 @@ class Toslibc < Formula
 
       To build them:
         cd #{opt_pkgshare}/example
-        make
+        make clean all
 
-      You must have `m68k-elf-gcc` and `pkg-config` in your PATH.
+      You must have `m68k-atari-tos-gnu-gcc` in your PATH.
+
+      You can use `pkg-config` to query compiler and linker flags:
+        pkg-config toslibc --cflags --libs
+      (Note: `m68k-atari-tos-gnu-gcc` applies these flags by default.)
 
       If you encounter build errors referencing macOS SDK paths,
       make sure to unset environment variables like `CFLAGS` and `CPATH`
@@ -82,8 +78,13 @@ class Toslibc < Formula
   end
 
   test do
-    assert_predicate prefix/"usr/include/stdio.h", :exist?
-    assert_predicate prefix/"usr/lib/libc.a", :exist?
-    assert_predicate lib/"script/prg.ld", :exist?
+    assert_path_exists prefix/"usr/include/stdio.h", :exist?
+    assert_path_exists prefix/"usr/lib/libc.a", :exist?
+    assert_path_exists lib/"script/prg.ld", :exist?
+
+    output = shell_output("pkg-config toslibc --cflags --libs")
+    assert_match "-isystem", output
+    assert_match "-L#{opt_prefix}/usr/lib", output
+    assert_match "--script=#{opt_prefix}/usr/lib/script/prg.ld", output
   end
 end
