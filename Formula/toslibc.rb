@@ -50,9 +50,8 @@ class Toslibc < Formula
 
       You must have `m68k-atari-tos-gnu-gcc` in your PATH.
 
-      You can use `pkg-config` to query compiler and linker flags:
+      Alternatively, you can use `pkg-config` with m68k-elf-gcc:
         pkg-config toslibc --cflags --libs
-      (Note: `m68k-atari-tos-gnu-gcc` applies these flags by default.)
 
       If you encounter build errors referencing macOS SDK paths,
       make sure to unset environment variables like `CFLAGS` and `CPATH`
