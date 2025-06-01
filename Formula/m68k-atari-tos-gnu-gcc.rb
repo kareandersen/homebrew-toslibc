@@ -14,17 +14,16 @@ class M68kAtariTosGnuGcc < Formula
     ENV.remove "CFLAGS", "-isysroot"
     ENV.remove "CPPFLAGS", "-isysroot"
 
-    stage_dir = buildpath/"stage"
-    sysroot = opt_prefix
     gcc_major = Formula["gcc"].any_installed_version.major
     host_cc = Formula["gcc"].opt_bin/"gcc-#{gcc_major}"
     toslibc_prefix = Formula["kareandersen/toslibc/toslibc"].opt_prefix
+    stage_dir = buildpath/"stage"
 
     system "make",
       "install-compiler",
       "install-binutils",
-      "prefix=#{toslibc_prefix}",
-      "exec-prefix=#{sysroot}",
+      "prefix=#{prefix}",
+      "exec-prefix=#{prefix}",
       "bindir=#{opt_bin}",
       "datarootdir=#{pkgshare}",
       "exampledir=#{pkgshare}/example",
@@ -35,11 +34,8 @@ class M68kAtariTosGnuGcc < Formula
       "TARGET_COMPILE=m68k-elf-",
       "CC=#{host_cc}"
 
-    staged_root = stage_dir/sysroot.relative_path_from(Pathname.new("/"))
-
-    bin.install Dir[staged_root/"bin/*"]
-    include.install Dir[staged_root/"include/*"] if (staged_root/"include").exist?
-    lib.install Dir[staged_root/"lib/*"] if (staged_root/"lib").exist?
+    staged_root = stage_dir/opt_prefix.relative_path_from(Pathname.new("/"))
+    prefix.install Dir[staged_root/"*"]
   end
 
   test do
