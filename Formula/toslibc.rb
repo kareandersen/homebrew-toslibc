@@ -22,7 +22,6 @@ class Toslibc < Formula
     system "make",
       "install-lib",
       "install-example",
-      "install-pkg-config",
       "install-prg.ld-script",
       "prefix=#{opt_prefix}",
       "bindir=#{opt_bin}",
