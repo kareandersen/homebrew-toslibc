@@ -2,6 +2,8 @@ class Toslibc < Formula
   desc "32-bit C standard library for Atari TOS"
   homepage "https://github.com/frno7/toslibc"
   license any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MIT"]
+  url "https://github.com/frno7/toslibc/archive/refs/tags/v0.3.tar.gz"
+  sha256 "f9a83bc67c05abf72001e1ed7ac013fcf01701789a44173edb9d0e0e67bbceb5"
   head "https://github.com/frno7/toslibc.git", branch: "main"
 
   depends_on "gcc" => :build
