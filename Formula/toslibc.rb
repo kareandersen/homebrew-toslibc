@@ -53,9 +53,16 @@ class Toslibc < Formula
       Alternatively, you can use `pkg-config` with m68k-elf-gcc:
         pkg-config toslibc --cflags --libs
 
-      If you encounter build errors referencing macOS SDK paths,
-      make sure to unset environment variables like `CFLAGS` and `CPATH`
-      which may interfere with cross-compilation.
+      Linker script note:
+        The `prg.ld` installed by this formula is provided for use with
+        `m68k-elf-gcc` via `toslibc.pc`. A separate copy is installed by
+        the `m68k-atari-tos-gnu-binutils` formula for use with
+        `m68k-atari-tos-gnu-ld`.
+
+      Troublehooting:
+        If you encounter build errors referencing macOS SDK paths,
+        make sure to unset environment variables like `CFLAGS` and `CPATH`
+        which may interfere with cross-compilation.
     EOS
   end
 
